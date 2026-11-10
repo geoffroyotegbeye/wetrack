@@ -244,6 +244,11 @@ entitiesRouter.patch('/:entity/:id', ah(async (req, res) => {
   );
   if (!rows[0]) throw new HttpError(404, 'Enregistrement introuvable.');
   if (req.params.entity === 'Colis') await syncCommande(rows[0].data.commande_id);
+  // Commande modifiée à la main : si elle a des colis (et n'est pas annulée), son statut suit ses colis.
+  if (req.params.entity === 'Commande' && (await syncCommande(rows[0].id))) {
+    const fresh = await query(`SELECT * FROM ${table} WHERE id = $1`, [rows[0].id]);
+    return res.json(toRecord(fresh.rows[0]));
+  }
   res.json(toRecord(rows[0]));
 }));
 

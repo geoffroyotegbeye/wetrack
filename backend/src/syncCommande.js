@@ -3,9 +3,9 @@ import { query } from './db.js';
 // Statut d'une commande déduit de ses colis :
 //   - tous les colis livrés ou retirés            → « Livrée »
 //   - au moins un colis a quitté l'entrepôt Chine → « Expédiée »
-//   - colis tous encore en entrepôt Chine         → « En préparation »
+//   - colis tous encore en entrepôt Chine         → « Reçue en entrepôt »
 // Sans colis, ou si la commande est « Annulée », le statut reste celui choisi par l'équipe.
-// La même règle est appliquée à l'existant par la migration 004.
+// Même règle dans les migrations 004 et 005.
 const SQL = `
   WITH etat AS (
     SELECT count(*) AS total,
@@ -18,7 +18,7 @@ const SQL = `
     SELECT CASE
              WHEN termines = total THEN 'Livrée'
              WHEN partis > 0 THEN 'Expédiée'
-             ELSE 'En préparation'
+             ELSE 'Reçue en entrepôt'
            END AS statut
     FROM etat
     WHERE total > 0

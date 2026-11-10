@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { api } from "@/api/client";
 import DateField from "@/components/commandes/DateField";
-import { ETAPE_COMMANDE, ETAPE_FOURNISSEUR, formatDateCourt } from "@/lib/logistics";
+import { ETAPE_COMMANDE, ETAPE_ENTREPOT, ETAPE_FOURNISSEUR, STATUTS_COMMANDE, STATUTS_COMMANDE_MANUELS, formatDateCourt } from "@/lib/logistics";
 import { inputClass, panelClass } from "@/lib/uiClasses";
 
 const plusAncienne = (dates) => dates.filter(Boolean).sort()[0] || null;
@@ -11,27 +11,31 @@ const plusAncienne = (dates) => dates.filter(Boolean).sort()[0] || null;
 // L'équipe (droit d'écriture sur les commandes) renseigne la date fournisseur et la date d'arrivée prévue.
 export default function SuiviCommande({ commande, colis, editable, onChange }) {
   const partis = colis.filter((c) => c.statut && c.statut !== "En entrepôt Chine");
+  // Rang du statut courant dans la frise (une commande annulée garde les étapes déjà franchies).
+  const rang = STATUTS_COMMANDE.indexOf(commande.statut);
+  const atteint = (i) => rang >= i && commande.statut !== "Annulée";
   const etapes = [
     { label: ETAPE_COMMANDE, fait: true, date: commande.date_commande },
-    { label: ETAPE_FOURNISSEUR, fait: Boolean(commande.date_commande_fournisseur), date: commande.date_commande_fournisseur },
-    { label: "Reçue en entrepôt Chine", fait: colis.length > 0, date: plusAncienne(colis.map((c) => c.created_date)) },
-    { label: "Expédiée", fait: partis.length > 0, date: null },
+    { label: ETAPE_FOURNISSEUR, fait: atteint(1) || Boolean(commande.date_commande_fournisseur), date: commande.date_commande_fournisseur },
+    { label: ETAPE_ENTREPOT, fait: atteint(2) || colis.length > 0, date: plusAncienne(colis.map((c) => c.created_date)) },
+    { label: "Expédiée", fait: atteint(3) || partis.length > 0, date: null },
     { label: "Livrée", fait: commande.statut === "Livrée", date: null },
   ];
   const courante = etapes.findIndex((e) => !e.fait);
 
   const enregistrerFournisseur = async (date) => {
     const maj = { date_commande_fournisseur: date };
-    // Achat passé chez le fournisseur : la commande est au minimum « En préparation ».
-    if (date && ["En attente", "Validée"].includes(commande.statut)) maj.statut = "En préparation";
+    // Achat passé chez le fournisseur : la commande passe à l'étape correspondante.
+    if (date && commande.statut === ETAPE_COMMANDE) maj.statut = ETAPE_FOURNISSEUR;
     await api.entities.Commande.update(commande.id, maj);
     await onChange?.();
   };
 
   // Statuts réglables à la main. « Expédiée » et « Livrée » viennent des colis (automatique) ;
   // une fois un colis parti, seule l'annulation reste possible manuellement.
-  const MANUELS = ["En attente", "Validée", "En préparation", "Annulée"];
-  const optionsStatut = partis.length ? ["Annulée"] : MANUELS;
+  // Les étapes suivantes viennent des colis : dès qu'un colis existe, seule l'annulation reste manuelle.
+  const MANUELS = [...STATUTS_COMMANDE_MANUELS, "Annulée"];
+  const optionsStatut = commande.statut === "Annulée" || !colis.length ? MANUELS : ["Annulée"];
   const [statutSaving, setStatutSaving] = useState(false);
   const [statutErreur, setStatutErreur] = useState("");
 
@@ -41,7 +45,10 @@ export default function SuiviCommande({ commande, colis, editable, onChange }) {
     setStatutErreur("");
     setStatutSaving(true);
     try {
-      await api.entities.Commande.update(commande.id, { statut });
+      const maj = { statut };
+      // « Commandé auprès du fournisseur » sans date : on date l'achat à aujourd'hui.
+      if (statut === ETAPE_FOURNISSEUR && !commande.date_commande_fournisseur) maj.date_commande_fournisseur = new Date().toISOString().slice(0, 10);
+      await api.entities.Commande.update(commande.id, maj);
       await onChange?.();
     } catch (err) {
       setStatutErreur(err.message || "Modification impossible.");
@@ -100,9 +107,9 @@ export default function SuiviCommande({ commande, colis, editable, onChange }) {
             {statutSaving ? <Loader2 className="h-4 w-4 animate-spin text-white/50" /> : null}
           </div>
           <p className="mt-1.5 text-[11px] leading-snug text-white/35">
-            {partis.length
-              ? "Les colis sont partis : le statut suit maintenant les colis (Expédiée, puis Livrée). Seule l'annulation reste possible."
-              : "« Expédiée » et « Livrée » se mettent à jour automatiquement à partir des colis."}
+            {colis.length && commande.statut !== "Annulée"
+              ? "La marchandise est en entrepôt : le statut suit maintenant les colis (Reçue en entrepôt, Expédiée, Livrée). Seule l'annulation reste possible."
+              : "« Reçue en entrepôt », « Expédiée » et « Livrée » se mettent à jour automatiquement à partir des colis."}
           </p>
           {statutErreur ? <p className="mt-1 text-[12px] text-[#F87171]">{statutErreur}</p> : null}
         </div>

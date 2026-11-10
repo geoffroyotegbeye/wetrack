@@ -23,18 +23,16 @@ export const STATUTS_COLIS = [
   "Retiré",
 ];
 
-export const STATUTS_COMMANDE = [
-  "En attente",
-  "Validée",
-  "En préparation",
-  "Expédiée",
-  "Livrée",
-  "Annulée",
-];
+// Statuts de commande = étapes de la commande, de l'achat en Chine à la livraison.
+//   - les 2 premiers se règlent à la main (ou via la date fournisseur) ;
+//   - « Reçue en entrepôt », « Expédiée » et « Livrée » suivent automatiquement les colis ;
+//   - « Annulée » se règle à la main.
+export const ETAPE_COMMANDE = "Commande en cours";
+export const ETAPE_FOURNISSEUR = "Commandée auprès du fournisseur";
+export const ETAPE_ENTREPOT = "Reçue en entrepôt";
 
-// Étapes d'achat, avant la réception en entrepôt (portées par la commande).
-export const ETAPE_COMMANDE = "Commande en cours en Chine";
-export const ETAPE_FOURNISSEUR = "Commandé auprès du fournisseur en Chine";
+export const STATUTS_COMMANDE = [ETAPE_COMMANDE, ETAPE_FOURNISSEUR, ETAPE_ENTREPOT, "Expédiée", "Livrée", "Annulée"];
+export const STATUTS_COMMANDE_MANUELS = [ETAPE_COMMANDE, ETAPE_FOURNISSEUR];
 
 export const STATUTS_CARGAISON = [
   "Planifié",
@@ -62,8 +60,9 @@ export const STATUT_CLASSES = {
   "En chargement": "bg-[#F59E0B]/15 text-[#FBBF24] ring-[#F59E0B]/30",
   Arrivé: "bg-[#22C55E]/15 text-[#4ADE80] ring-[#22C55E]/30",
   Clôturé: "bg-[#A855F7]/15 text-[#C084FC] ring-[#A855F7]/30",
-  "Commande en cours en Chine": "bg-[#64748B]/15 text-[#A3B1C2] ring-[#64748B]/30",
-  "Commandé auprès du fournisseur en Chine": "bg-[#64748B]/15 text-[#A3B1C2] ring-[#64748B]/30",
+  "Commande en cours": "bg-white/5 text-[#94A3B8] ring-white/10",
+  "Commandée auprès du fournisseur": "bg-[#F59E0B]/15 text-[#FBBF24] ring-[#F59E0B]/30",
+  "Reçue en entrepôt": "bg-[#38A6DE]/15 text-[#5FBBEC] ring-[#38A6DE]/30",
 };
 
 export function statutClasses(statut) {

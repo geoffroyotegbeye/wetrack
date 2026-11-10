@@ -32,8 +32,8 @@ export default function Dashboard() {
           icon={ShoppingBag}
           accentRgb="255,69,0"
           details={[
-            { label: "Validées", value: formatNombre(stats.validees) },
-            { label: "En attente", value: formatNombre(stats.attente) },
+            { label: "En cours d'achat", value: formatNombre(stats.enAchat) },
+            { label: "En entrepôt", value: formatNombre(stats.enEntrepot) },
           ]}
         />
         <StatCard

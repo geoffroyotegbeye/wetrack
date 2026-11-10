@@ -3,6 +3,7 @@ import { Loader2 } from "lucide-react";
 import { api } from "@/api/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import SearchSelect from "@/components/common/SearchSelect";
+import { ETAPE_COMMANDE, ETAPE_FOURNISSEUR, STATUTS_COMMANDE_MANUELS } from "@/lib/logistics";
 import { btnPrimary, inputClass, labelClass } from "@/lib/uiClasses";
 
 function referenceAuto() {
@@ -18,7 +19,7 @@ const initial = {
   montant_marchandise: "",
   poids_total: "",
   cbm_total: "",
-  statut: "Validée",
+  statut: ETAPE_COMMANDE,
   date_commande: new Date().toISOString().slice(0, 10),
 };
 
@@ -64,6 +65,8 @@ export default function NouvelleCommandeDialog({ open, onOpenChange, clients = [
         cbm_total: Number(form.cbm_total) || 0,
         statut: form.statut,
         date_commande: form.date_commande,
+        // Créée directement « commandée chez le fournisseur » : on date l'achat au jour de la commande.
+        ...(form.statut === ETAPE_FOURNISSEUR ? { date_commande_fournisseur: form.date_commande } : {}),
       });
       onCreated?.(created);
     } catch (err) {
@@ -133,7 +136,7 @@ export default function NouvelleCommandeDialog({ open, onOpenChange, clients = [
           <label className="block">
             <span className={labelClass}>Statut</span>
             <select value={form.statut} onChange={set("statut")} className={inputClass}>
-              {["En attente", "Validée", "En préparation"].map((s) => (
+              {STATUTS_COMMANDE_MANUELS.map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>

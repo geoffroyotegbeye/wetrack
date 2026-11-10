@@ -139,9 +139,9 @@ function statutSelonAge(age, mode) {
 }
 
 function statutCommande(statutsColis, age) {
-  if (age < 2 && rand() < 0.5) return 'En attente';
+  if (age < 2 && rand() < 0.5) return 'Commande en cours';
   if (statutsColis.every((s) => s === 'Livré' || s === 'Retiré')) return 'Livrée';
-  if (statutsColis.every((s) => s === 'En entrepôt Chine')) return age < 4 ? 'Validée' : 'En préparation';
+  if (statutsColis.every((s) => s === 'En entrepôt Chine')) return 'Reçue en entrepôt';
   return 'Expédiée';
 }
 
@@ -311,7 +311,7 @@ export async function seed({ reset = false } = {}) {
       };
       if (age > 20 && rand() < 0.04) commandeData.statut = 'Annulée';
       const commandeId = await insert(client, 'commandes', commandeData, dateCommande, adminId);
-      if (commandeData.statut === 'Annulée' || commandeData.statut === 'En attente') continue;
+      if (commandeData.statut === 'Annulée' || commandeData.statut === 'Commande en cours') continue;
 
       for (const c of colisData) {
         const { _age, _cargo, ...data } = c;

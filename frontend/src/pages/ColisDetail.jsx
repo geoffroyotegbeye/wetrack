@@ -114,10 +114,10 @@ export default function ColisDetail() {
   const historique = [
     ...logs,
     ...(commande?.date_commande_fournisseur
-      ? [{ id: "achat-fournisseur", statut: ETAPE_FOURNISSEUR, date_evenement: commande.date_commande_fournisseur, lieu: "Chine", note: "Achat passé auprès du fournisseur" }]
+      ? [{ id: "achat-fournisseur", statut: ETAPE_FOURNISSEUR, date_evenement: commande.date_commande_fournisseur, lieu: "Achat passé auprès du fournisseur" }]
       : []),
     ...(commande
-      ? [{ id: "achat-commande", statut: ETAPE_COMMANDE, date_evenement: commande.date_commande, lieu: "Chine", note: `Commande ${commande.reference}` }]
+      ? [{ id: "achat-commande", statut: ETAPE_COMMANDE, date_evenement: commande.date_commande, lieu: `Commande ${commande.reference}` }]
       : []),
   ];
 

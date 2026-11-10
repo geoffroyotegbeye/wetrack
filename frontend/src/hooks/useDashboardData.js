@@ -3,7 +3,7 @@ import { api } from "@/api/client";
 
 const EMPTY_STATS = {
   commandes: 0, enTransit: 0, disponibles: 0, clients: 0,
-  douane: 0, chargement: 0, validees: 0, attente: 0, livres: 0, retires: 0,
+  douane: 0, chargement: 0, enAchat: 0, enEntrepot: 0, livres: 0, retires: 0,
 };
 
 function toMap(rows) {
@@ -99,8 +99,8 @@ export function useDashboardData() {
           clients,
           douane,
           chargement: colis["Chargement"] || 0,
-          validees: cmd["Validée"] || 0,
-          attente: cmd["En attente"] || 0,
+          enAchat: (cmd["Commande en cours"] || 0) + (cmd["Commandée auprès du fournisseur"] || 0),
+          enEntrepot: cmd["Reçue en entrepôt"] || 0,
           livres,
           retires,
         },
