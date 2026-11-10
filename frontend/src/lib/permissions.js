@@ -9,6 +9,7 @@ export function usePermissions() {
     role: p?.role,
     roleLabel: p?.role_label || "",
     isAdmin: p?.role === "admin",
+    isClient: Boolean(p?.is_client),
     canPage: (page) => Boolean(p?.pages?.includes(page)),
     canWrite: (entity) => Boolean(p?.write?.includes(entity)),
     canDelete: Boolean(p?.delete),
@@ -24,4 +25,5 @@ export const ROLE_COULEURS = {
   agent_chine: "bg-[#F59E0B]/15 text-[#FBBF24] ring-[#F59E0B]/30",
   agent_agence: "bg-[#22C55E]/15 text-[#4ADE80] ring-[#22C55E]/30",
   lecteur: "bg-white/5 text-[#94A3B8] ring-white/10",
+  client: "bg-[#A855F7]/15 text-[#C084FC] ring-[#A855F7]/30",
 };

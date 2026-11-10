@@ -11,6 +11,7 @@ export const publicUser = (u) => ({
   email: u.email,
   full_name: u.full_name,
   role: u.role,
+  client_id: u.client_id || null,
   actif: u.actif,
   last_login: u.last_login,
   created_date: u.created_date,
@@ -82,9 +83,15 @@ authRouter.post('/register', ah(async (req, res) => {
   res.status(201).json({ access_token: sign(rows[0]), user: { ...publicUser(rows[0]), permissions: permissionsFor(rows[0].role) } });
 }));
 
-authRouter.get('/me', requireAuth, (req, res) => {
-  res.json({ ...publicUser(req.user), permissions: permissionsFor(req.user.role) });
-});
+authRouter.get('/me', requireAuth, ah(async (req, res) => {
+  // Pour un client : sa fiche (nom, téléphone…) pour personnaliser l'espace client.
+  let client = null;
+  if (req.user.role === 'client' && req.user.client_id) {
+    const { rows } = await query('SELECT id, data FROM clients WHERE id = $1', [req.user.client_id]);
+    if (rows[0]) client = { id: rows[0].id, ...rows[0].data };
+  }
+  res.json({ ...publicUser(req.user), client, permissions: permissionsFor(req.user.role) });
+}));
 
 // Changement de son propre mot de passe.
 authRouter.post('/password', requireAuth, ah(async (req, res) => {

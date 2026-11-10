@@ -3,16 +3,20 @@ import { Outlet } from "react-router-dom";
 import { api } from "@/api/client";
 import Sidebar from "@/components/layout/Sidebar";
 import Topbar from "@/components/layout/Topbar";
+import { usePermissions } from "@/lib/permissions";
 
 export default function AppLayout() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifCount, setNotifCount] = useState(0);
+  const { canPage } = usePermissions();
+  const voitNotifications = canPage("notifications");
 
   useEffect(() => {
+    if (!voitNotifications) return;
     api.entities.NotificationLog.count({ statut: "En attente" })
       .then(setNotifCount)
       .catch(() => {});
-  }, []);
+  }, [voitNotifications]);
 
   return (
     <div className="min-h-screen bg-background">

@@ -9,6 +9,14 @@ import { ROLES, ROLE_KEYS, PAGES, ENTITY_PERMS, COLIS_STATUTS } from './permissi
 export const usersRouter = Router();
 usersRouter.use(requireRole('admin'));
 
+// Vérifie que la fiche client existe (obligatoire pour le rôle « client »).
+const checkClient = async (clientId) => {
+  if (!clientId) throw new HttpError(400, 'Un compte client doit être relié à une fiche client.');
+  const { rows } = await query('SELECT id FROM clients WHERE id = $1', [clientId]);
+  if (!rows[0]) throw new HttpError(400, 'Fiche client introuvable.');
+  return rows[0].id;
+};
+
 const checkRole = (role) => {
   if (!ROLE_KEYS.includes(role)) throw new HttpError(400, 'Rôle invalide.');
   return role;
@@ -39,10 +47,11 @@ usersRouter.post('/', ah(async (req, res) => {
   const role = checkRole(req.body?.role || 'lecteur');
   if (!EMAIL_RE.test(email)) throw new HttpError(400, 'Adresse email invalide.');
   if (password.length < MIN_PASSWORD) throw new HttpError(400, `Le mot de passe doit contenir au moins ${MIN_PASSWORD} caractères.`);
+  const clientId = role === 'client' ? await checkClient(req.body?.client_id) : null;
   const { rows } = await query(
-    `INSERT INTO users (email, password_hash, full_name, role) VALUES ($1, $2, $3, $4)
+    `INSERT INTO users (email, password_hash, full_name, role, client_id) VALUES ($1, $2, $3, $4, $5)
      ON CONFLICT (email) DO NOTHING RETURNING *`,
-    [email, await bcrypt.hash(password, 12), fullName, role],
+    [email, await bcrypt.hash(password, 12), fullName, role, clientId],
   );
   if (!rows[0]) throw new HttpError(409, 'Un compte existe déjà avec cet email.');
   res.status(201).json(publicUser(rows[0]));
@@ -59,6 +68,11 @@ usersRouter.patch('/:id', ah(async (req, res) => {
     const role = checkRole(req.body.role);
     if (isSelf && role !== 'admin') throw new HttpError(400, 'Vous ne pouvez pas retirer votre propre rôle administrateur.');
     add('role', role);
+    // Un compte client doit être relié à une fiche client ; les autres rôles n'en ont pas.
+    if (role === 'client') add('client_id', await checkClient(req.body.client_id));
+    else add('client_id', null);
+  } else if (req.body.client_id !== undefined) {
+    add('client_id', await checkClient(req.body.client_id));
   }
   if (req.body.actif !== undefined) {
     if (isSelf && !req.body.actif) throw new HttpError(400, 'Vous ne pouvez pas désactiver votre propre compte.');

@@ -11,12 +11,13 @@ import { ROLE_COULEURS } from "@/lib/permissions";
 import { formatDateCourt } from "@/lib/logistics";
 import { btnGhost, btnPrimary, inputClass, labelClass, panelClass } from "@/lib/uiClasses";
 
-const VIDE = { full_name: "", email: "", role: "lecteur", password: "" };
+const VIDE = { full_name: "", email: "", role: "lecteur", password: "", client_id: "" };
 
 const PAGES_LABELS = {
   dashboard: "Tableau de bord", commandes: "Commandes", suivi: "Suivi", cargaisons: "Cargaisons",
   notifications: "Notifications", clients: "Clients", tarifs: "Tarifs", rapports: "Rapports",
   parametres: "Paramètres", utilisateurs: "Utilisateurs",
+  espace_client: "Mes colis", suivi_detail: "Détail colis",
 };
 
 function RoleBadge({ role, label }) {
@@ -33,6 +34,7 @@ export default function Utilisateurs() {
   const moi = useCurrentUser();
   const [users, setUsers] = useState([]);
   const [roles, setRoles] = useState([]);
+  const [fiches, setFiches] = useState([]);
   const [loading, setLoading] = useState(true);
   const [q, setQ] = useState("");
   const [erreur, setErreur] = useState("");
@@ -47,9 +49,14 @@ export default function Utilisateurs() {
   const load = async () => {
     setLoading(true);
     try {
-      const [u, r] = await Promise.all([api.users.list(), api.users.roles()]);
+      const [u, r, c] = await Promise.all([
+        api.users.list(),
+        api.users.roles(),
+        api.entities.Client.list({ sort: "nom", limit: 1000 }),
+      ]);
       setUsers(u.items || []);
       setRoles(r.roles || []);
+      setFiches(c.items || []);
     } catch (err) {
       setErreur(err.message);
     } finally {
@@ -86,7 +93,7 @@ export default function Utilisateurs() {
       className={`${inputClass} h-9 sm:w-[170px]`}
       aria-label={`Rôle de ${u.full_name || u.email}`}
     >
-      {roles.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
+      {roles.filter((r) => r.key !== "client" || u.role === "client").map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}
     </select>
   );
 
@@ -119,6 +126,9 @@ export default function Utilisateurs() {
           {u.full_name || "—"} {u.id === moi?.id ? <span className="text-[11px] font-normal text-white/35">(vous)</span> : null}
         </p>
         <p className="truncate text-[11.5px] text-white/45">{u.email}</p>
+        {u.role === "client" ? (
+          <p className="truncate text-[11px] text-[#C084FC]">Fiche : {fiches.find((f) => f.id === u.client_id)?.nom || "—"}</p>
+        ) : null}
       </div>
     </div>
   );
@@ -224,6 +234,7 @@ export default function Utilisateurs() {
         open={creation}
         onOpenChange={setCreation}
         roles={roles}
+        fiches={fiches}
         onCreated={(u) => { setUsers((list) => [...list, u]); setCreation(false); }}
       />
       <ResetDialog user={resetPour} onClose={() => setResetPour(null)} roleLabel={roleLabel} />
@@ -231,7 +242,7 @@ export default function Utilisateurs() {
   );
 }
 
-function CreationDialog({ open, onOpenChange, roles, onCreated }) {
+function CreationDialog({ open, onOpenChange, roles, fiches, onCreated }) {
   const [form, setForm] = useState(VIDE);
   const [erreur, setErreur] = useState("");
   const [saving, setSaving] = useState(false);
@@ -244,7 +255,16 @@ function CreationDialog({ open, onOpenChange, roles, onCreated }) {
     setErreur("");
     setSaving(true);
     try {
-      onCreated(await api.users.create({ ...form, full_name: form.full_name.trim() || undefined }));
+      if (form.role === "client" && !form.client_id) {
+        setErreur("Choisissez la fiche client à relier à ce compte.");
+        setSaving(false);
+        return;
+      }
+      onCreated(await api.users.create({
+        ...form,
+        full_name: form.full_name.trim() || undefined,
+        client_id: form.role === "client" ? form.client_id : undefined,
+      }));
     } catch (err) {
       setErreur(err.message);
     } finally {
@@ -274,6 +294,29 @@ function CreationDialog({ open, onOpenChange, roles, onCreated }) {
             </select>
             <span className="mt-1 block text-[11px] text-white/40">{roles.find((r) => r.key === form.role)?.description}</span>
           </label>
+          {form.role === "client" ? (
+            <label className="block">
+              <span className={labelClass}>Fiche client</span>
+              <select
+                value={form.client_id}
+                onChange={(e) => {
+                  const fiche = fiches.find((f) => f.id === e.target.value);
+                  setForm((f) => ({
+                    ...f,
+                    client_id: e.target.value,
+                    full_name: f.full_name || fiche?.nom || "",
+                    email: f.email || fiche?.email || "",
+                  }));
+                }}
+                className={inputClass}
+                required
+              >
+                <option value="">Choisir un client…</option>
+                {fiches.map((f) => <option key={f.id} value={f.id}>{f.nom}{f.code_client ? ` (${f.code_client})` : ""}</option>)}
+              </select>
+              <span className="mt-1 block text-[11px] text-white/40">Le client ne verra que les commandes et colis de cette fiche.</span>
+            </label>
+          ) : null}
           <label className="block">
             <span className={labelClass}>Mot de passe provisoire</span>
             <PasswordInput required minLength={8} value={form.password} onChange={set("password")} className={inputClass} autoComplete="new-password" placeholder="8 caractères minimum" />

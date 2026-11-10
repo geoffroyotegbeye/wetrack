@@ -57,6 +57,40 @@ const authorize = (req, action) => {
   return table;
 };
 
+// Périmètre « ses propres données » pour un client : renvoie une condition SQL (ou null).
+// Le compte client est relié à une fiche Client via users.client_id.
+function clientScope(req, params) {
+  if (req.user.role !== 'client') return null;
+  const clientId = req.user.client_id;
+  if (!clientId) return 'FALSE';
+  params.push(String(clientId));
+  const p = '$' + params.length;
+  switch (req.params.entity) {
+    case 'Client':
+      return 'id::text = ' + p;
+    case 'Commande':
+    case 'Colis':
+      return "data->>'client_id' = " + p;
+    case 'TrackingLog':
+    case 'NotificationLog':
+      return "data->>'colis_id' IN (SELECT id::text FROM colis WHERE data->>'client_id' = " + p + ')';
+    default:
+      return 'FALSE';
+  }
+}
+
+const andWhere = (where, cond) => {
+  if (!cond) return where;
+  return where ? where + ' AND (' + cond + ')' : 'WHERE (' + cond + ')';
+};
+
+// Filtre exact + recherche texte + périmètre client.
+const whereFor = (req, params) =>
+  andWhere(
+    addSearch(req.params.entity, req.query.search, params, buildWhere(parseJson(req.query.q, 'q'), params)),
+    clientScope(req, params),
+  );
+
 // Un rôle ne peut appliquer que les statuts de colis qui le concernent.
 const checkStatutColis = (req, data) => {
   if (req.params.entity !== 'Colis' || data.statut === undefined) return;
@@ -137,7 +171,7 @@ export const entitiesRouter = Router();
 entitiesRouter.get('/:entity', ah(async (req, res) => {
   const table = authorize(req, 'read');
   const params = [];
-  const where = addSearch(req.params.entity, req.query.search, params, buildWhere(parseJson(req.query.q, 'q'), params));
+  const where = whereFor(req, params);
   const limit = parseLimit(req.query.limit);
   const skip = Math.max(Number(req.query.skip) || 0, 0);
   const [{ rows }, total] = await Promise.all([
@@ -151,7 +185,7 @@ entitiesRouter.get('/:entity', ah(async (req, res) => {
 entitiesRouter.get('/:entity/count', ah(async (req, res) => {
   const table = authorize(req, 'read');
   const params = [];
-  const where = addSearch(req.params.entity, req.query.search, params, buildWhere(parseJson(req.query.q, 'q'), params));
+  const where = whereFor(req, params);
   const { rows } = await query(`SELECT count(*)::int AS count FROM ${table} ${where}`, params);
   res.json({ count: rows[0].count });
 }));
@@ -165,7 +199,7 @@ entitiesRouter.get('/:entity/aggregate', ah(async (req, res) => {
     try { sums = [].concat(JSON.parse(req.query.sum)); } catch { sums = String(req.query.sum).split(','); }
   }
   const params = [];
-  const where = buildWhere(parseJson(req.query.q, 'q'), params);
+  const where = whereFor(req, params);
   const sumCols = sums.map((s) => {
     const f = field(String(s).trim());
     return `, COALESCE(SUM(NULLIF(data->>'${f}', '')::numeric), 0)::float8 AS "sum_${f}"`;
@@ -180,7 +214,9 @@ entitiesRouter.get('/:entity/aggregate', ah(async (req, res) => {
 
 entitiesRouter.get('/:entity/:id', ah(async (req, res) => {
   const table = authorize(req, 'read');
-  const { rows } = await query(`SELECT * FROM ${table} WHERE id = $1`, [req.params.id]);
+  const params = [req.params.id];
+  const scope = clientScope(req, params);
+  const { rows } = await query(`SELECT * FROM ${table} WHERE id = $1` + (scope ? ' AND (' + scope + ')' : ''), params);
   if (!rows[0]) throw new HttpError(404, 'Enregistrement introuvable.');
   res.json(toRecord(rows[0]));
 }));

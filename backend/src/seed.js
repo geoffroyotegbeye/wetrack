@@ -92,6 +92,7 @@ const UTILISATEURS = [
   ['agent.cotonou@wetrack.local', 'Agent Cotonou', 'agent_agence'],
   ['consultation@wetrack.local', 'Consultation', 'lecteur'],
 ];
+const COMPTE_CLIENT_DEMO = 'client@wetrack.local';
 // En ligne, définir SEED_PASSWORD : le mot de passe par défaut est visible dans le dépôt public.
 const MOT_DE_PASSE_DEMO = process.env.SEED_PASSWORD || 'Demo-2026!';
 
@@ -190,6 +191,14 @@ export async function seed({ reset = false } = {}) {
       const id = await insert(client, 'clients', data, daysAgo(120 - i * 3), adminId);
       clients.push({ id, ...data });
     }
+
+    // Compte de démonstration pour l'espace client, relié à la fiche « Aïcha Bello ».
+    const clienteDemo = clients.find((c) => c.nom === 'Aïcha Bello');
+    await client.query(
+      `INSERT INTO users (email, password_hash, full_name, role, client_id) VALUES ($1, $2, $3, 'client', $4)
+       ON CONFLICT (email) DO UPDATE SET role = 'client', client_id = EXCLUDED.client_id, full_name = EXCLUDED.full_name`,
+      [COMPTE_CLIENT_DEMO, hash, clienteDemo.nom, clienteDemo.id],
+    );
 
     // Cargaisons (passées, en cours et à venir)
     const cargaisons = [];
@@ -369,7 +378,7 @@ export async function seed({ reset = false } = {}) {
     await client.query('COMMIT');
     const nbCommandes = (await client.query('SELECT count(*)::int AS n FROM commandes')).rows[0].n;
     console.log(`[seed] ${clients.length} clients, ${cargaisons.length} cargaisons, ${nbCommandes} commandes, ${nbColis} colis, ${nbLogs} événements de suivi, ${nbNotifs} notifications.`);
-    console.log(`[seed] Comptes de démo : ${UTILISATEURS.map((u) => u[0]).join(', ')} (mot de passe : ${MOT_DE_PASSE_DEMO})`);
+    console.log(`[seed] Comptes de démo : ${[...UTILISATEURS.map((u) => u[0]), COMPTE_CLIENT_DEMO].join(', ')} (mot de passe : ${MOT_DE_PASSE_DEMO})`);
   } catch (err) {
     await client.query('ROLLBACK').catch(() => {});
     throw err;

@@ -22,12 +22,22 @@ import Rapports from "@/pages/Rapports";
 import Parametres from "@/pages/Parametres";
 import Utilisateurs from "@/pages/Utilisateurs";
 import RequirePage from "@/components/RequirePage";
+import EspaceClient from "@/pages/EspaceClient";
+import { usePermissions } from "@/lib/permissions";
 
 // Les pages de connexion renvoient à l'accueil si l'utilisateur est déjà connecté.
 const GuestOnly = ({ children }) => {
   const { isAuthenticated, isLoadingAuth } = useAuth();
   if (isLoadingAuth) return null;
   return isAuthenticated ? <Navigate to="/" replace /> : children;
+};
+
+// Accueil : tableau de bord pour l'équipe, espace client pour un client.
+const Accueil = () => {
+  const { canPage } = usePermissions();
+  if (canPage("dashboard")) return <Dashboard />;
+  if (canPage("espace_client")) return <Navigate to="/mes-colis" replace />;
+  return <RequirePage page="dashboard"><Dashboard /></RequirePage>;
 };
 
 const AppRoutes = () => (
@@ -37,11 +47,12 @@ const AppRoutes = () => (
 
     <Route element={<ProtectedRoute />}>
       <Route element={<AppLayout />}>
-        <Route path="/" element={<RequirePage page="dashboard"><Dashboard /></RequirePage>} />
+        <Route path="/" element={<Accueil />} />
+        <Route path="/mes-colis" element={<RequirePage page="espace_client"><EspaceClient /></RequirePage>} />
         <Route path="/commandes" element={<RequirePage page="commandes"><Commandes /></RequirePage>} />
         <Route path="/commandes/:id" element={<RequirePage page="commandes"><CommandeDetail /></RequirePage>} />
         <Route path="/suivi" element={<RequirePage page="suivi"><SuiviColis /></RequirePage>} />
-        <Route path="/suivi/:id" element={<RequirePage page="suivi"><ColisDetail /></RequirePage>} />
+        <Route path="/suivi/:id" element={<RequirePage page={["suivi", "suivi_detail"]}><ColisDetail /></RequirePage>} />
         <Route path="/cargaisons" element={<RequirePage page="cargaisons"><Cargaisons /></RequirePage>} />
         <Route path="/clients" element={<RequirePage page="clients"><Clients /></RequirePage>} />
         <Route path="/notifications" element={<RequirePage page="notifications"><Notifications /></RequirePage>} />

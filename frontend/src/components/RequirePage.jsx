@@ -6,7 +6,8 @@ import { panelClass } from "@/lib/uiClasses";
 // Affiche la page seulement si le rôle de l'utilisateur y a accès.
 export default function RequirePage({ page, children }) {
   const { canPage, roleLabel } = usePermissions();
-  if (canPage(page)) return children;
+  const pages = Array.isArray(page) ? page : [page];
+  if (pages.some(canPage)) return children;
   return (
     <div className={`${panelClass} mx-auto mt-6 max-w-md p-8 text-center`}>
       <span className="mx-auto grid h-12 w-12 place-items-center rounded-2xl bg-[#FF4500]/10">

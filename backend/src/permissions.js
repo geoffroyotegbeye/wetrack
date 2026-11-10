@@ -7,12 +7,15 @@ export const ROLES = {
   agent_chine: { label: 'Agent Chine', description: 'Réception en entrepôt, scission des colis, cargaisons, statuts jusqu\'au transit.' },
   agent_agence: { label: 'Agent agence', description: 'Dédouanement, mise à disposition, retrait, notifications et clients.' },
   lecteur: { label: 'Lecture seule', description: 'Consultation uniquement.' },
+  client: { label: 'Client', description: 'Espace client : suivi de ses propres commandes et colis uniquement.' },
 };
 
 export const ROLE_KEYS = Object.keys(ROLES);
 export const DEFAULT_ROLE = 'lecteur';
 
-const ALL = ROLE_KEYS;
+// Rôles de l'équipe (tous sauf le client final).
+export const STAFF = ROLE_KEYS.filter((r) => r !== 'client');
+const ALL = STAFF;
 const GESTION = ['admin', 'gestionnaire'];
 
 // Pages visibles (clé = identifiant de page côté frontend).
@@ -23,20 +26,24 @@ export const PAGES = {
   cargaisons: ALL,
   notifications: ['admin', 'gestionnaire', 'agent_agence', 'lecteur'],
   clients: ALL,
-  tarifs: ALL,
+  tarifs: [...ALL, 'client'],
   rapports: ['admin', 'gestionnaire', 'lecteur'],
   parametres: ALL,
   utilisateurs: ['admin'],
+  // Espace client
+  espace_client: ['client'],
+  suivi_detail: [...ALL, 'client'],
 };
 
 // Lecture / écriture par entité. La suppression est réservée à l'administrateur.
+// Le client ne lit que SES données : le filtrage est fait par clientScope() dans entities.js.
 export const ENTITY_PERMS = {
-  Client: { read: ALL, write: [...GESTION, 'agent_agence'] },
-  Commande: { read: ALL, write: GESTION },
-  Colis: { read: ALL, write: [...GESTION, 'agent_chine', 'agent_agence'] },
+  Client: { read: [...ALL, 'client'], write: [...GESTION, 'agent_agence'] },
+  Commande: { read: [...ALL, 'client'], write: GESTION },
+  Colis: { read: [...ALL, 'client'], write: [...GESTION, 'agent_chine', 'agent_agence'] },
   Cargaison: { read: ALL, write: [...GESTION, 'agent_chine'] },
-  TrackingLog: { read: ALL, write: [...GESTION, 'agent_chine', 'agent_agence'] },
-  NotificationLog: { read: ALL, write: [...GESTION, 'agent_agence'] },
+  TrackingLog: { read: [...ALL, 'client'], write: [...GESTION, 'agent_chine', 'agent_agence'] },
+  NotificationLog: { read: [...ALL, 'client'], write: [...GESTION, 'agent_agence'] },
 };
 export const DELETE_ROLES = ['admin'];
 
@@ -53,6 +60,7 @@ export const COLIS_STATUTS = {
   agent_chine: STATUTS_CHINE,
   agent_agence: STATUTS_AGENCE,
   lecteur: [],
+  client: [],
 };
 
 export const can = {
@@ -78,5 +86,6 @@ export function permissionsFor(role) {
     delete: can.delete(role),
     functions: Object.keys(FUNCTION_PERMS).filter((f) => can.fn(role, f)),
     statuts_colis: COLIS_STATUTS[role],
+    is_client: role === 'client',
   };
 }

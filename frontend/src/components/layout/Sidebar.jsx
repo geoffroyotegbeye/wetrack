@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingBag, PackageSearch, Ship, Bell, Users,
-  Calculator, BarChart3, Settings, LifeBuoy, Plane, LogOut, X, UserCog,
+  Calculator, BarChart3, Settings, LifeBuoy, Plane, LogOut, X, UserCog, PackageOpen,
 } from "lucide-react";
 import { api } from "@/api/client";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -9,6 +9,7 @@ import { usePermissions } from "@/lib/permissions";
 import WebCargoMark from "@/components/WebCargoMark";
 
 const NAV = [
+  { label: "Mes colis", path: "/mes-colis", icon: PackageOpen, page: "espace_client" },
   { label: "Tableau de bord", path: "/", icon: LayoutDashboard, page: "dashboard" },
   { label: "Commandes", path: "/commandes", icon: ShoppingBag, page: "commandes" },
   { label: "Suivi des colis", path: "/suivi", icon: PackageSearch, page: "suivi" },

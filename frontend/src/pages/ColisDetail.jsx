@@ -12,7 +12,7 @@ export default function ColisDetail() {
   const [colis, setColis] = useState(null);
   const [logs, setLogs] = useState([]);
   const [nouveauStatut, setNouveauStatut] = useState("");
-  const { canWrite, canFunction, statutsColis } = usePermissions();
+  const { canWrite, canFunction, statutsColis, isClient } = usePermissions();
   const statutsAutorises = statutsColis(STATUTS_COLIS);
   const peutModifier = canWrite("Colis") && statutsAutorises.length > 0;
   const peutNotifier = canFunction("notifierColis");
@@ -115,8 +115,8 @@ export default function ColisDetail() {
   return (
     <div className="space-y-5">
       <div className="wsc-rise">
-        <Link to="/suivi" className="mb-2 inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70">
-          <ArrowLeft className="h-3.5 w-3.5" /> Suivi des colis
+        <Link to={isClient ? "/mes-colis" : "/suivi"} className="mb-2 inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70">
+          <ArrowLeft className="h-3.5 w-3.5" /> {isClient ? "Mes colis" : "Suivi des colis"}
         </Link>
         <div className="flex flex-wrap items-center gap-3">
           <h1 className="font-display text-[21px] font-bold tracking-tight text-white sm:text-[25px]">{colis.reference}</h1>
@@ -208,6 +208,14 @@ export default function ColisDetail() {
                 : "Les étapes que vous pouvez appliquer dépendent de votre rôle."}
             </p>
           </div>
+          ) : isClient ? (
+            colis.statut === "Disponible à l'agence" ? (
+              <div className="rounded-2xl border border-[#22C55E]/30 bg-[#22C55E]/[0.07] p-5">
+                <h2 className="font-display text-[14px] font-semibold text-white">Votre colis est prêt</h2>
+                <p className="mt-2 text-[12.5px] text-white/70">Il vous attend à l'agence Webdadd Cotonou.</p>
+                <p className="mt-2 text-[12.5px] font-medium text-[#FBBF24]">Munissez-vous obligatoirement de votre pièce d'identité pour le retrait.</p>
+              </div>
+            ) : null
           ) : (
             <div className={`${panelClass} p-5 text-[12.5px] text-white/50`}>
               Votre rôle permet de consulter ce colis, mais pas de modifier son statut.

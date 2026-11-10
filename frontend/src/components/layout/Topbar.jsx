@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Bell, CalendarDays, Menu } from "lucide-react";
+import { usePermissions } from "@/lib/permissions";
 
 export default function Topbar({ onMenu, notifCount = 0 }) {
   const [query, setQuery] = useState("");
   const navigate = useNavigate();
+  const { canPage } = usePermissions();
+  const cibleRecherche = canPage("suivi") ? "/suivi" : "/mes-colis";
 
   const submit = (e) => {
     e.preventDefault();
-    navigate(`/suivi${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`);
+    navigate(`${cibleRecherche}${query.trim() ? `?q=${encodeURIComponent(query.trim())}` : ""}`);
   };
 
   return (
@@ -33,6 +36,7 @@ export default function Topbar({ onMenu, notifCount = 0 }) {
             <CalendarDays className="h-3.5 w-3.5 text-white/35" />
             07 – 13 Nov. 2026
           </div>
+          {canPage("notifications") ? (
           <button
             onClick={() => navigate("/notifications")}
             className="relative rounded-xl border border-white/[0.06] bg-[#121316] p-2.5 text-white/55 transition-colors hover:text-white"
@@ -45,6 +49,7 @@ export default function Topbar({ onMenu, notifCount = 0 }) {
               </span>
             ) : null}
           </button>
+          ) : null}
         </div>
       </div>
     </header>
