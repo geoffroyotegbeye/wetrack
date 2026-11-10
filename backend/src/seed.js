@@ -304,6 +304,9 @@ export async function seed({ reset = false } = {}) {
         cbm_total: Number(colisData.reduce((s, c) => s + c.cbm, 0).toFixed(2)),
         statut: statutCommande(statutsColis, age),
         date_commande: isoDay(dateCommande),
+        // Achat passé chez le fournisseur 1 à 2 jours après la commande (sauf commande toute récente).
+        date_commande_fournisseur: age >= 2 ? isoDay(new Date(dateCommande.getTime() + int(1, 2) * DAY)) : null,
+        date_arrivee_prevue: colisData.map((c) => c.eta).sort().at(-1),
         source: 'Webdadd',
       };
       if (age > 20 && rand() < 0.04) commandeData.statut = 'Annulée';

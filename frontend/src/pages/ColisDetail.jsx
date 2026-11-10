@@ -3,7 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Loader2, Check, Copy, MessageCircle } from "lucide-react";
 import { api } from "@/api/client";
 import StatutBadge from "@/components/common/StatutBadge";
-import { STATUTS_COLIS, formatDate, formatDateCourt, formatFCFA, formatNombre } from "@/lib/logistics";
+import { ETAPE_COMMANDE, ETAPE_FOURNISSEUR, STATUTS_COLIS, formatDate, formatDateCourt, formatFCFA, formatNombre } from "@/lib/logistics";
+import DateField from "@/components/commandes/DateField";
 import { btnPrimary, inputClass, labelClass, panelClass } from "@/lib/uiClasses";
 import { usePermissions } from "@/lib/permissions";
 import AgenceRetrait from "@/components/client/AgenceRetrait";
@@ -12,6 +13,7 @@ export default function ColisDetail() {
   const { id } = useParams();
   const [colis, setColis] = useState(null);
   const [logs, setLogs] = useState([]);
+  const [commande, setCommande] = useState(null);
   const [nouveauStatut, setNouveauStatut] = useState("");
   const { canWrite, canFunction, statutsColis, isClient } = usePermissions();
   const statutsAutorises = statutsColis(STATUTS_COLIS);
@@ -32,8 +34,17 @@ export default function ColisDetail() {
     }
     setColis(c);
     setNouveauStatut(c.statut);
-    const page = await api.entities.TrackingLog.filter({ colis_id: id }, { sort: "-date_evenement", limit: 50 });
+    const [page, cmd] = await Promise.all([
+      api.entities.TrackingLog.filter({ colis_id: id }, { sort: "-date_evenement", limit: 50 }),
+      c.commande_id ? api.entities.Commande.get(c.commande_id).catch(() => null) : null,
+    ]);
     setLogs(page?.items || []);
+    setCommande(cmd);
+  };
+
+  const enregistrerEta = async (date) => {
+    await api.entities.Colis.update(colis.id, { eta: date });
+    await load();
   };
 
   useEffect(() => {
@@ -99,6 +110,17 @@ export default function ColisDetail() {
   if (!colis) return <div className={`${panelClass} p-10 text-center text-[13px] text-white/35`}>Chargement…</div>;
 
   const tel = (notification?.destinataire || colis.client_telephone || "").replace(/[^\d]/g, "");
+  // Historique : événements du colis (les plus récents en premier), puis les étapes d'achat de la commande.
+  const historique = [
+    ...logs,
+    ...(commande?.date_commande_fournisseur
+      ? [{ id: "achat-fournisseur", statut: ETAPE_FOURNISSEUR, date_evenement: commande.date_commande_fournisseur, lieu: "Chine", note: "Achat passé auprès du fournisseur" }]
+      : []),
+    ...(commande
+      ? [{ id: "achat-commande", statut: ETAPE_COMMANDE, date_evenement: commande.date_commande, lieu: "Chine", note: `Commande ${commande.reference}` }]
+      : []),
+  ];
+
   const infos = [
     { label: "Client", value: colis.client_nom || "—" },
     { label: "Téléphone", value: colis.client_telephone || "—" },
@@ -153,10 +175,10 @@ export default function ColisDetail() {
           <div className={panelClass}>
             <h2 className="px-5 py-4 font-display text-[14px] font-semibold text-white">Historique de suivi</h2>
             <ol className="space-y-4 border-t border-white/[0.05] px-5 py-5">
-              {logs.length === 0 ? (
+              {historique.length === 0 ? (
                 <p className="text-[12.5px] text-white/35">Aucun événement enregistré.</p>
               ) : (
-                logs.map((l) => (
+                historique.map((l) => (
                   <li key={l.id} className="relative pl-5">
                     <span className="absolute left-0 top-1.5 h-2 w-2 rounded-full bg-[#FF4500]" />
                     <span className="absolute left-[3.5px] top-4 h-full w-px bg-white/[0.07]" />
@@ -174,6 +196,11 @@ export default function ColisDetail() {
 
         {/* Sur mobile, la mise à jour du statut (action principale des agents) passe en premier. */}
         <div className="order-first space-y-4 xl:order-none">
+          {canWrite("Commande") ? (
+            <div className={`${panelClass} p-5`}>
+              <DateField label="Arrivée prévue de ce colis" value={colis.eta} editable onSave={enregistrerEta} placeholder="À définir" />
+            </div>
+          ) : null}
           {peutModifier ? (
           <div className={`${panelClass} p-5`}>
             <h2 className="mb-3 font-display text-[14px] font-semibold text-white">Mettre à jour le statut</h2>

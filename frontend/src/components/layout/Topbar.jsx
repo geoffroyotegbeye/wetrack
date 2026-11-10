@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Bell, CalendarDays, Menu } from "lucide-react";
 import { usePermissions } from "@/lib/permissions";
+import UserMenu from "@/components/layout/UserMenu";
 
 export default function Topbar({ onMenu, notifCount = 0 }) {
   const [query, setQuery] = useState("");
@@ -50,6 +51,7 @@ export default function Topbar({ onMenu, notifCount = 0 }) {
             ) : null}
           </button>
           ) : null}
+          <UserMenu />
         </div>
       </div>
     </header>

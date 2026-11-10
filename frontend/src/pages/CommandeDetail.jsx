@@ -5,6 +5,7 @@ import { api } from "@/api/client";
 import StatutBadge from "@/components/common/StatutBadge";
 import EmptyState from "@/components/common/EmptyState";
 import ScinderColisDialog from "@/components/commandes/ScinderColisDialog";
+import SuiviCommande from "@/components/commandes/SuiviCommande";
 import { formatDate, formatFCFA, formatNombre, formatDateCourt } from "@/lib/logistics";
 import { btnPrimary, panelClass } from "@/lib/uiClasses";
 import { usePermissions } from "@/lib/permissions";
@@ -55,6 +56,7 @@ export default function CommandeDetail() {
     { label: "Poids total", value: `${formatNombre(commande.poids_total)} kg` },
     { label: "Volume total", value: commande.cbm_total ? `${commande.cbm_total} m³` : "—" },
     { label: "Date de commande", value: formatDate(commande.date_commande) },
+    { label: "Arrivée prévue", value: commande.date_arrivee_prevue ? formatDate(commande.date_arrivee_prevue) : "À définir" },
   ];
 
   return (
@@ -75,6 +77,8 @@ export default function CommandeDetail() {
           </button>
         ) : null}
       </div>
+
+      <SuiviCommande commande={commande} colis={colis} editable={canWrite("Commande")} onChange={load} />
 
       <div className={`${panelClass} p-5`}>
         <h2 className="mb-4 font-display text-[14px] font-semibold text-white">Informations</h2>

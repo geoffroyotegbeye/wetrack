@@ -32,6 +32,10 @@ export const STATUTS_COMMANDE = [
   "Annulée",
 ];
 
+// Étapes d'achat, avant la réception en entrepôt (portées par la commande).
+export const ETAPE_COMMANDE = "Commande en cours en Chine";
+export const ETAPE_FOURNISSEUR = "Commandé auprès du fournisseur en Chine";
+
 export const STATUTS_CARGAISON = [
   "Planifié",
   "En chargement",
@@ -58,6 +62,8 @@ export const STATUT_CLASSES = {
   "En chargement": "bg-[#F59E0B]/15 text-[#FBBF24] ring-[#F59E0B]/30",
   Arrivé: "bg-[#22C55E]/15 text-[#4ADE80] ring-[#22C55E]/30",
   Clôturé: "bg-[#A855F7]/15 text-[#C084FC] ring-[#A855F7]/30",
+  "Commande en cours en Chine": "bg-[#64748B]/15 text-[#A3B1C2] ring-[#64748B]/30",
+  "Commandé auprès du fournisseur en Chine": "bg-[#64748B]/15 text-[#A3B1C2] ring-[#64748B]/30",
 };
 
 export function statutClasses(statut) {

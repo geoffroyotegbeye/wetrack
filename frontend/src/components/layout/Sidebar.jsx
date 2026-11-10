@@ -108,20 +108,21 @@ export default function Sidebar({ open, onClose }) {
             <p className="mt-1 max-w-[9rem] text-[11.5px] leading-snug text-white/55">Votre colis, notre priorité !</p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2.5">
-            <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#FF4500]/80 to-[#A855F7]/70 text-[11px] font-semibold text-white">
-              {initiales}
-            </div>
-            <div className="min-w-0 flex-1 leading-tight">
-              <p className="truncate text-[12.5px] font-medium text-white">{user?.full_name || "Chargement…"}</p>
-              <p className="truncate text-[10.5px] text-white/40">{roleLabel || "—"}</p>
-            </div>
+          <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-2.5">
+            <NavLink to="/mon-compte" onClick={onClose} className="flex items-center gap-3 rounded-xl p-0.5 hover:bg-white/[0.03]">
+              <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gradient-to-br from-[#FF4500]/80 to-[#A855F7]/70 text-[11px] font-semibold text-white">
+                {initiales}
+              </div>
+              <div className="min-w-0 flex-1 leading-tight">
+                <p className="truncate text-[12.5px] font-medium text-white">{user?.full_name || "Chargement…"}</p>
+                <p className="truncate text-[10.5px] text-white/40">{roleLabel || "—"}</p>
+              </div>
+            </NavLink>
             <button
               onClick={() => api.auth.logout()}
-              className="rounded-lg p-1.5 text-white/35 transition-colors hover:bg-white/5 hover:text-[#FF7A3D]"
-              aria-label="Se déconnecter"
+              className="mt-2 flex w-full items-center justify-center gap-2 rounded-xl border border-white/[0.08] px-3 py-2 text-[12.5px] text-white/70 transition-colors hover:border-[#FF4500]/40 hover:bg-[#FF4500]/10 hover:text-[#FF7A3D]"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" /> Se déconnecter
             </button>
           </div>
         </div>

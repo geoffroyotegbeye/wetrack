@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Check, KeyRound, Loader2, Mail, MapPin, Phone, User } from "lucide-react";
+import { Check, KeyRound, Loader2, LogOut, Mail, MapPin, Phone, User } from "lucide-react";
 import { api } from "@/api/client";
 import PageHeader from "@/components/common/PageHeader";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { usePermissions } from "@/lib/permissions";
-import { btnPrimary, inputClass, labelClass, panelClass } from "@/lib/uiClasses";
+import { btnGhost, btnPrimary, inputClass, labelClass, panelClass } from "@/lib/uiClasses";
 
 function Ligne({ icon: Icon, label, value }) {
   return (
@@ -49,7 +49,15 @@ export default function MonCompte() {
 
   return (
     <div className="space-y-5">
-      <PageHeader title="Mon compte" subtitle="Vos informations et votre mot de passe." />
+      <PageHeader
+        title="Mon compte"
+        subtitle="Vos informations et votre mot de passe."
+        action={
+          <button onClick={() => api.auth.logout()} className={`${btnGhost} hover:border-[#FF4500]/40 hover:text-[#FF7A3D]`}>
+            <LogOut className="h-4 w-4" /> Se déconnecter
+          </button>
+        }
+      />
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section className={`${panelClass} p-5`}>
