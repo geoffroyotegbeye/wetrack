@@ -46,7 +46,7 @@ Comptes de démonstration (mot de passe `Demo-2026!`) : `operations@`, `logistiq
    (sans `-pooler`), en remplaçant `sslmode=require` par `sslmode=verify-full`.
 2. **Render** : New → **Blueprint** → choisir ce dépôt. `render.yaml` crée `wetrack-api` et `wetrack-web`.
    Renseigner `DATABASE_URL`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` ; le reste est automatique
-   (secret JWT généré, URL de l'API et CORS reliés entre les deux services).
+   (secret JWT généré). Si les noms des services changent, adapter `CORS_ORIGIN` et `VITE_API_URL` dans `render.yaml`.
 3. Les tables sont créées au premier démarrage de l'API.
 4. Données de démo (facultatif) depuis son poste :
    `cd backend && DATABASE_URL="<neon>" JWT_SECRET=x SEED_PASSWORD="<mot de passe fort>" npm run seed`

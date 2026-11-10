@@ -20,11 +20,9 @@ services:
         generateValue: true
       - key: JWT_EXPIRES_IN
         value: 7d
+      # Adresse publique du site (fromService « host » donne un nom interne inutilisable par le navigateur).
       - key: CORS_ORIGIN
-        fromService:
-          type: web
-          name: wetrack-web
-          property: host
+        value: https://wetrack-web.onrender.com
       - key: ALLOW_REGISTRATION
         value: "false"
       - key: ADMIN_EMAIL
@@ -42,11 +40,9 @@ services:
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
     envVars:
+      # Adresse publique de l'API, intégrée au build du site.
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: wetrack-api
-          property: host
+        value: https://wetrack-api.onrender.com
     routes:
       - type: rewrite
         source: /*
