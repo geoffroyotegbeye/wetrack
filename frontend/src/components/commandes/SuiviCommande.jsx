@@ -1,8 +1,9 @@
-import { Check } from "lucide-react";
+import { useState } from "react";
+import { Check, Loader2 } from "lucide-react";
 import { api } from "@/api/client";
 import DateField from "@/components/commandes/DateField";
 import { ETAPE_COMMANDE, ETAPE_FOURNISSEUR, formatDateCourt } from "@/lib/logistics";
-import { panelClass } from "@/lib/uiClasses";
+import { inputClass, panelClass } from "@/lib/uiClasses";
 
 const plusAncienne = (dates) => dates.filter(Boolean).sort()[0] || null;
 
@@ -25,6 +26,28 @@ export default function SuiviCommande({ commande, colis, editable, onChange }) {
     if (date && ["En attente", "Validée"].includes(commande.statut)) maj.statut = "En préparation";
     await api.entities.Commande.update(commande.id, maj);
     await onChange?.();
+  };
+
+  // Statuts réglables à la main. « Expédiée » et « Livrée » viennent des colis (automatique) ;
+  // une fois un colis parti, seule l'annulation reste possible manuellement.
+  const MANUELS = ["En attente", "Validée", "En préparation", "Annulée"];
+  const optionsStatut = partis.length ? ["Annulée"] : MANUELS;
+  const [statutSaving, setStatutSaving] = useState(false);
+  const [statutErreur, setStatutErreur] = useState("");
+
+  const changerStatut = async (statut) => {
+    if (!statut || statut === commande.statut) return;
+    if (statut === "Annulée" && !window.confirm(`Annuler la commande ${commande.reference} ?`)) return;
+    setStatutErreur("");
+    setStatutSaving(true);
+    try {
+      await api.entities.Commande.update(commande.id, { statut });
+      await onChange?.();
+    } catch (err) {
+      setStatutErreur(err.message || "Modification impossible.");
+    } finally {
+      setStatutSaving(false);
+    }
   };
 
   const enregistrerArrivee = async (date, { option }) => {
@@ -59,6 +82,31 @@ export default function SuiviCommande({ commande, colis, editable, onChange }) {
           );
         })}
       </ol>
+
+      {editable ? (
+        <div className="mt-5 border-t border-white/[0.05] pt-4">
+          <p className="text-[10.5px] uppercase tracking-wider text-white/35">Statut de la commande</p>
+          <div className="mt-1.5 flex flex-wrap items-center gap-2">
+            <select
+              value=""
+              disabled={statutSaving}
+              onChange={(e) => changerStatut(e.target.value)}
+              className={`${inputClass} h-9 w-full sm:w-64`}
+              aria-label="Changer le statut de la commande"
+            >
+              <option value="">Actuel : {commande.statut} — changer…</option>
+              {optionsStatut.filter((s) => s !== commande.statut).map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            {statutSaving ? <Loader2 className="h-4 w-4 animate-spin text-white/50" /> : null}
+          </div>
+          <p className="mt-1.5 text-[11px] leading-snug text-white/35">
+            {partis.length
+              ? "Les colis sont partis : le statut suit maintenant les colis (Expédiée, puis Livrée). Seule l'annulation reste possible."
+              : "« Expédiée » et « Livrée » se mettent à jour automatiquement à partir des colis."}
+          </p>
+          {statutErreur ? <p className="mt-1 text-[12px] text-[#F87171]">{statutErreur}</p> : null}
+        </div>
+      ) : null}
 
       <div className="mt-5 grid grid-cols-1 gap-4 border-t border-white/[0.05] pt-4 sm:grid-cols-2">
         <DateField
