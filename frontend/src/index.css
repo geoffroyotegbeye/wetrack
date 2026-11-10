@@ -1,0 +1,158 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 228 10% 10%;
+    --foreground: 0 0% 98%;
+    --card: 230 9% 13%;
+    --card-foreground: 0 0% 98%;
+    --popover: 230 9% 13%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 16 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 8% 17%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 230 8% 17%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 230 8% 19%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 228 8% 20%;
+    --input: 225 10% 9%;
+    --ring: 16 100% 50%;
+    --radius: 0.875rem;
+    --chart-1: 16 100% 50%;
+    --chart-2: 200 72% 55%;
+    --chart-3: 142 71% 45%;
+    --chart-4: 271 91% 65%;
+    --chart-5: 38 92% 55%;
+    --font-heading: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+    --font-body: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Montserrat', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    --sidebar-background: 228 14% 8%;
+    --sidebar-foreground: 220 9% 72%;
+    --sidebar-primary: 16 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 9% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 228 8% 16%;
+    --sidebar-ring: 16 100% 50%;
+  }
+
+  .dark {
+    --background: 228 10% 10%;
+    --foreground: 0 0% 98%;
+    --card: 230 9% 13%;
+    --card-foreground: 0 0% 98%;
+    --popover: 230 9% 13%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 16 100% 50%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 230 8% 17%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 230 8% 17%;
+    --muted-foreground: 218 11% 65%;
+    --accent: 230 8% 19%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 228 8% 20%;
+    --input: 225 10% 9%;
+    --ring: 16 100% 50%;
+    --sidebar-background: 228 14% 8%;
+    --sidebar-foreground: 220 9% 72%;
+    --sidebar-primary: 16 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 230 9% 15%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 228 8% 16%;
+    --sidebar-ring: 16 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body antialiased;
+  }
+
+  ::selection {
+    background: rgba(255, 69, 0, 0.3);
+  }
+
+  ::-webkit-scrollbar {
+    width: 9px;
+    height: 9px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.09);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.16);
+  }
+}
+
+@keyframes wsc-dot {
+  0% {
+    opacity: 0.3;
+    transform: scale(0.82);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.wsc-dot {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.3;
+  animation: wsc-dot 0.5s cubic-bezier(0.22, 1, 0.36, 1) 1 forwards;
+}
+
+@keyframes wsc-rise {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.wsc-rise {
+  animation: wsc-rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .wsc-dot {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+  .wsc-rise {
+    animation: none;
+  }
+}

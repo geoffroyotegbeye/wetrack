@@ -1,0 +1,9 @@
+# Mode développement (chargé automatiquement par `docker compose`).
+# Le code du backend est monté dans le conteneur et l'API redémarre à chaque modification :
+# pas besoin de reconstruire l'image. Pour la production : docker compose -f docker-compose.yml up -d
+services:
+  api:
+    command: ["node", "--watch", "src/server.js"]
+    volumes:
+      - ./backend/src:/app/src:ro
+      - ./backend/migrations:/app/migrations:ro

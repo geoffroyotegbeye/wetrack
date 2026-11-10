@@ -1,0 +1,57 @@
+# Blueprint Render : crée l'API et le site en une fois.
+# Render → New → Blueprint → choisir ce dépôt. La base de données est sur Neon (DATABASE_URL).
+services:
+  # API Node.js (Docker)
+  - type: web
+    name: wetrack-api
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    region: frankfurt
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false # chaîne de connexion Neon (directe, sans « -pooler »)
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        fromService:
+          type: web
+          name: wetrack-web
+          property: host
+      - key: ALLOW_REGISTRATION
+        value: "false"
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: ADMIN_NAME
+        value: Administrateur
+
+  # Frontend React (site statique)
+  - type: web
+    name: wetrack-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    staticPublishPath: dist
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          type: web
+          name: wetrack-api
+          property: host
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
