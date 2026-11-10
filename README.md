@@ -42,7 +42,7 @@ Comptes de démonstration (mot de passe `Demo-2026!`) : `operations@`, `logistiq
 
 ## Déploiement (Render + Neon)
 
-1. **Neon** : créer un projet (région Frankfurt) et copier la chaîne de connexion **directe**
+1. **Neon** : créer un projet (même région que l'API Render, ici Ohio / us-east-2) et copier la chaîne de connexion **directe**
    (sans `-pooler`), en remplaçant `sslmode=require` par `sslmode=verify-full`.
 2. **Render** : New → **Blueprint** → choisir ce dépôt. `render.yaml` crée `wetrack-api` et `wetrack-web`.
    Renseigner `DATABASE_URL`, `ADMIN_EMAIL` et `ADMIN_PASSWORD` ; le reste est automatique
