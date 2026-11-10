@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { query } from './db.js';
 import { HttpError, ah } from './http.js';
 import { can } from './permissions.js';
+import { syncCommande } from './syncCommande.js';
 
 // Nom d'entité côté frontend -> table PostgreSQL (liste blanche).
 export const ENTITIES = {
@@ -229,6 +230,7 @@ entitiesRouter.post('/:entity', ah(async (req, res) => {
     `INSERT INTO ${table} (data, created_by) VALUES ($1, $2) RETURNING *`,
     [data, req.user.id],
   );
+  if (req.params.entity === 'Colis') await syncCommande(rows[0].data.commande_id);
   res.status(201).json(toRecord(rows[0]));
 }));
 
@@ -241,12 +243,14 @@ entitiesRouter.patch('/:entity/:id', ah(async (req, res) => {
     [data, req.params.id],
   );
   if (!rows[0]) throw new HttpError(404, 'Enregistrement introuvable.');
+  if (req.params.entity === 'Colis') await syncCommande(rows[0].data.commande_id);
   res.json(toRecord(rows[0]));
 }));
 
 entitiesRouter.delete('/:entity/:id', ah(async (req, res) => {
   const table = authorize(req, 'delete');
-  const { rowCount } = await query(`DELETE FROM ${table} WHERE id = $1`, [req.params.id]);
-  if (!rowCount) throw new HttpError(404, 'Enregistrement introuvable.');
+  const { rows } = await query(`DELETE FROM ${table} WHERE id = $1 RETURNING data`, [req.params.id]);
+  if (!rows[0]) throw new HttpError(404, 'Enregistrement introuvable.');
+  if (req.params.entity === 'Colis') await syncCommande(rows[0].data.commande_id);
   res.status(204).end();
 }));
