@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { api } from "@/api/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { STATUTS_COMMANDE } from "@/lib/logistics";
+import SearchSelect from "@/components/common/SearchSelect";
 import { btnPrimary, inputClass, labelClass } from "@/lib/uiClasses";
 
 function referenceAuto() {
@@ -92,17 +92,23 @@ export default function NouvelleCommandeDialog({ open, onOpenChange, clients = [
             </label>
           </div>
 
-          <label className="block">
+          <div className="block">
             <span className={labelClass}>Client</span>
-            <select value={form.client_id} onChange={set("client_id")} className={inputClass} required>
-              <option value="">Sélectionner un client…</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nom} — {c.ville || c.pays || ""}
-                </option>
-              ))}
-            </select>
-          </label>
+            <SearchSelect
+              ariaLabel="Client"
+              options={clients.map((c) => ({
+                value: c.id,
+                label: c.nom,
+                hint: [c.ville || c.pays, c.code_client].filter(Boolean).join(" · "),
+                keywords: [c.telephone, c.email].filter(Boolean).join(" "),
+              }))}
+              value={form.client_id}
+              onChange={(id) => setForm((f) => ({ ...f, client_id: id }))}
+              placeholder="Sélectionner un client…"
+              searchPlaceholder="Nom, ville, téléphone, n° client…"
+              emptyText="Aucun client trouvé."
+            />
+          </div>
 
           <label className="block">
             <span className={labelClass}>Marchandise</span>
@@ -127,7 +133,7 @@ export default function NouvelleCommandeDialog({ open, onOpenChange, clients = [
           <label className="block">
             <span className={labelClass}>Statut</span>
             <select value={form.statut} onChange={set("statut")} className={inputClass}>
-              {STATUTS_COMMANDE.map((s) => (
+              {["En attente", "Validée", "En préparation"].map((s) => (
                 <option key={s} value={s}>{s}</option>
               ))}
             </select>

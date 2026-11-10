@@ -6,6 +6,7 @@ import EmptyState from "@/components/common/EmptyState";
 import Pagination from "@/components/common/Pagination";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PasswordInput } from "@/components/ui/password-input";
+import SearchSelect from "@/components/common/SearchSelect";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { ROLE_COULEURS } from "@/lib/permissions";
 import { formatDateCourt } from "@/lib/logistics";
@@ -295,27 +296,32 @@ function CreationDialog({ open, onOpenChange, roles, fiches, onCreated }) {
             <span className="mt-1 block text-[11px] text-white/40">{roles.find((r) => r.key === form.role)?.description}</span>
           </label>
           {form.role === "client" ? (
-            <label className="block">
+            <div className="block">
               <span className={labelClass}>Fiche client</span>
-              <select
+              <SearchSelect
+                ariaLabel="Fiche client"
+                options={fiches.map((f) => ({
+                  value: f.id,
+                  label: f.nom,
+                  hint: [f.ville || f.pays, f.code_client].filter(Boolean).join(" · "),
+                  keywords: [f.telephone, f.email].filter(Boolean).join(" "),
+                }))}
                 value={form.client_id}
-                onChange={(e) => {
-                  const fiche = fiches.find((f) => f.id === e.target.value);
+                onChange={(id) => {
+                  const fiche = fiches.find((f) => f.id === id);
                   setForm((f) => ({
                     ...f,
-                    client_id: e.target.value,
+                    client_id: id,
                     full_name: f.full_name || fiche?.nom || "",
                     email: f.email || fiche?.email || "",
                   }));
                 }}
-                className={inputClass}
-                required
-              >
-                <option value="">Choisir un client…</option>
-                {fiches.map((f) => <option key={f.id} value={f.id}>{f.nom}{f.code_client ? ` (${f.code_client})` : ""}</option>)}
-              </select>
+                placeholder="Choisir un client…"
+                searchPlaceholder="Nom, ville, téléphone, n° client…"
+                emptyText="Aucun client trouvé."
+              />
               <span className="mt-1 block text-[11px] text-white/40">Le client ne verra que les commandes et colis de cette fiche.</span>
-            </label>
+            </div>
           ) : null}
           <label className="block">
             <span className={labelClass}>Mot de passe provisoire</span>
