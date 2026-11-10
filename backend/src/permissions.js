@@ -32,7 +32,12 @@ export const PAGES = {
   utilisateurs: ['admin'],
   // Espace client
   espace_client: ['client'],
+  mes_commandes: ['client'],
+  mes_notifications: ['client'],
   suivi_detail: [...ALL, 'client'],
+  commande_detail: [...ALL, 'client'],
+  // Pour tout le monde : profil et changement de mot de passe
+  compte: [...ALL, 'client'],
 };
 
 // Lecture / écriture par entité. La suppression est réservée à l'administrateur.

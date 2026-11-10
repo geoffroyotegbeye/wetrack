@@ -23,6 +23,9 @@ import Parametres from "@/pages/Parametres";
 import Utilisateurs from "@/pages/Utilisateurs";
 import RequirePage from "@/components/RequirePage";
 import EspaceClient from "@/pages/EspaceClient";
+import MesCommandes from "@/pages/MesCommandes";
+import MesNotifications from "@/pages/MesNotifications";
+import MonCompte from "@/pages/MonCompte";
 import { usePermissions } from "@/lib/permissions";
 
 // Les pages de connexion renvoient à l'accueil si l'utilisateur est déjà connecté.
@@ -49,8 +52,11 @@ const AppRoutes = () => (
       <Route element={<AppLayout />}>
         <Route path="/" element={<Accueil />} />
         <Route path="/mes-colis" element={<RequirePage page="espace_client"><EspaceClient /></RequirePage>} />
+        <Route path="/mes-commandes" element={<RequirePage page="mes_commandes"><MesCommandes /></RequirePage>} />
+        <Route path="/mes-notifications" element={<RequirePage page="mes_notifications"><MesNotifications /></RequirePage>} />
+        <Route path="/mon-compte" element={<RequirePage page="compte"><MonCompte /></RequirePage>} />
         <Route path="/commandes" element={<RequirePage page="commandes"><Commandes /></RequirePage>} />
-        <Route path="/commandes/:id" element={<RequirePage page="commandes"><CommandeDetail /></RequirePage>} />
+        <Route path="/commandes/:id" element={<RequirePage page={["commandes", "commande_detail"]}><CommandeDetail /></RequirePage>} />
         <Route path="/suivi" element={<RequirePage page="suivi"><SuiviColis /></RequirePage>} />
         <Route path="/suivi/:id" element={<RequirePage page={["suivi", "suivi_detail"]}><ColisDetail /></RequirePage>} />
         <Route path="/cargaisons" element={<RequirePage page="cargaisons"><Cargaisons /></RequirePage>} />

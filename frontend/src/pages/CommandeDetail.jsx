@@ -10,7 +10,8 @@ import { btnPrimary, panelClass } from "@/lib/uiClasses";
 import { usePermissions } from "@/lib/permissions";
 
 export default function CommandeDetail() {
-  const { canWrite } = usePermissions();
+  const { canWrite, isClient } = usePermissions();
+  const retour = isClient ? "/mes-commandes" : "/commandes";
   const { id } = useParams();
   const [commande, setCommande] = useState(null);
   const [colis, setColis] = useState([]);
@@ -37,7 +38,7 @@ export default function CommandeDetail() {
     return (
       <div className={`${panelClass} p-10 text-center`}>
         <p className="text-[13px] text-white/60">{erreur}</p>
-        <Link to="/commandes" className="mt-3 inline-block text-[12.5px] text-[#FF7A3D]">Retour aux commandes</Link>
+        <Link to={retour} className="mt-3 inline-block text-[12.5px] text-[#FF7A3D]">Retour aux commandes</Link>
       </div>
     );
   }
@@ -60,8 +61,8 @@ export default function CommandeDetail() {
     <div className="space-y-5">
       <div className="wsc-rise flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <Link to="/commandes" className="mb-2 inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70">
-            <ArrowLeft className="h-3.5 w-3.5" /> Commandes
+          <Link to={retour} className="mb-2 inline-flex items-center gap-1.5 text-[12px] text-white/40 hover:text-white/70">
+            <ArrowLeft className="h-3.5 w-3.5" /> {isClient ? "Mes commandes" : "Commandes"}
           </Link>
           <div className="flex flex-wrap items-center gap-3">
             <h1 className="font-display text-[21px] font-bold tracking-tight text-white sm:text-[25px]">{commande.reference}</h1>
@@ -92,7 +93,7 @@ export default function CommandeDetail() {
           <h2 className="font-display text-[14px] font-semibold text-white">Colis liés ({colis.length})</h2>
         </div>
         {colis.length === 0 ? (
-          <EmptyState message="Aucun colis pour cette commande. Utilisez « Scinder en colis » pour créer les sous-colis." />
+          <EmptyState message={isClient ? "Les colis de cette commande apparaîtront ici dès leur réception en entrepôt." : "Aucun colis pour cette commande. Utilisez « Scinder en colis » pour créer les sous-colis."} />
         ) : (
           <div className="divide-y divide-white/[0.05] border-t border-white/[0.05]">
             {colis.map((c) => (

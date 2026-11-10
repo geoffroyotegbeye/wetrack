@@ -6,6 +6,7 @@ import StatutBadge from "@/components/common/StatutBadge";
 import { STATUTS_COLIS, formatDate, formatDateCourt, formatFCFA, formatNombre } from "@/lib/logistics";
 import { btnPrimary, inputClass, labelClass, panelClass } from "@/lib/uiClasses";
 import { usePermissions } from "@/lib/permissions";
+import AgenceRetrait from "@/components/client/AgenceRetrait";
 
 export default function ColisDetail() {
   const { id } = useParams();
@@ -210,10 +211,12 @@ export default function ColisDetail() {
           </div>
           ) : isClient ? (
             colis.statut === "Disponible à l'agence" ? (
-              <div className="rounded-2xl border border-[#22C55E]/30 bg-[#22C55E]/[0.07] p-5">
-                <h2 className="font-display text-[14px] font-semibold text-white">Votre colis est prêt</h2>
-                <p className="mt-2 text-[12.5px] text-white/70">Il vous attend à l'agence Webdadd Cotonou.</p>
-                <p className="mt-2 text-[12.5px] font-medium text-[#FBBF24]">Munissez-vous obligatoirement de votre pièce d'identité pour le retrait.</p>
+              <div className="space-y-3">
+                <div className="rounded-2xl border border-[#22C55E]/30 bg-[#22C55E]/[0.07] p-4">
+                  <h2 className="font-display text-[14px] font-semibold text-white">Votre colis est prêt</h2>
+                  <p className="mt-1 text-[12.5px] text-white/70">Il vous attend à l'agence.</p>
+                </div>
+                <AgenceRetrait />
               </div>
             ) : null
           ) : (

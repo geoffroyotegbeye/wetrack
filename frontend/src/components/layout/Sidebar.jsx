@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import {
   LayoutDashboard, ShoppingBag, PackageSearch, Ship, Bell, Users,
-  Calculator, BarChart3, Settings, LifeBuoy, Plane, LogOut, X, UserCog, PackageOpen,
+  Calculator, BarChart3, Settings, LifeBuoy, Plane, LogOut, X, UserCog, PackageOpen, ReceiptText, MessageSquareText, CircleUser,
 } from "lucide-react";
 import { api } from "@/api/client";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
@@ -10,6 +10,8 @@ import WebCargoMark from "@/components/WebCargoMark";
 
 const NAV = [
   { label: "Mes colis", path: "/mes-colis", icon: PackageOpen, page: "espace_client" },
+  { label: "Mes commandes", path: "/mes-commandes", icon: ReceiptText, page: "mes_commandes" },
+  { label: "Mes notifications", path: "/mes-notifications", icon: MessageSquareText, page: "mes_notifications" },
   { label: "Tableau de bord", path: "/", icon: LayoutDashboard, page: "dashboard" },
   { label: "Commandes", path: "/commandes", icon: ShoppingBag, page: "commandes" },
   { label: "Suivi des colis", path: "/suivi", icon: PackageSearch, page: "suivi" },
@@ -20,6 +22,7 @@ const NAV = [
   { label: "Rapports & Analyses", path: "/rapports", icon: BarChart3, page: "rapports" },
   { label: "Utilisateurs", path: "/utilisateurs", icon: UserCog, page: "utilisateurs" },
   { label: "Paramètres", path: "/parametres", icon: Settings, page: "parametres" },
+  { label: "Mon compte", path: "/mon-compte", icon: CircleUser, page: "compte" },
 ];
 
 export default function Sidebar({ open, onClose }) {

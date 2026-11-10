@@ -9,6 +9,8 @@ import Pagination from "@/components/common/Pagination";
 import { usePaginatedList } from "@/hooks/usePaginatedList";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { formatDateCourt, formatFCFA } from "@/lib/logistics";
+import { AGENCE, RAPPEL_PIECE_IDENTITE } from "@/lib/agence";
+import AgenceRetrait from "@/components/client/AgenceRetrait";
 import { inputClass, panelClass } from "@/lib/uiClasses";
 
 // Regroupement des statuts pour le client (vocabulaire simple).
@@ -83,10 +85,10 @@ export default function EspaceClient() {
                 {aRetirer.length === 1 ? "Un colis vous attend à l'agence" : `${aRetirer.length} colis vous attendent à l'agence`}
               </p>
               <p className="mt-1 flex items-center gap-1.5 text-[12.5px] text-white/70">
-                <MapPin className="h-3.5 w-3.5 shrink-0" /> Agence Webdadd Cotonou
+                <MapPin className="h-3.5 w-3.5 shrink-0" /> {AGENCE.nom}
               </p>
               <p className="mt-1 flex items-start gap-1.5 text-[12.5px] font-medium text-[#FBBF24]">
-                <IdCard className="mt-0.5 h-3.5 w-3.5 shrink-0" /> Munissez-vous obligatoirement de votre pièce d'identité pour le retrait.
+                <IdCard className="mt-0.5 h-3.5 w-3.5 shrink-0" /> {RAPPEL_PIECE_IDENTITE}
               </p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {aRetirer.map((c) => (
@@ -153,6 +155,8 @@ export default function EspaceClient() {
       )}
 
       <Pagination page={liste.page} pageCount={liste.pageCount} total={liste.total} pageSize={liste.pageSize} onPageChange={liste.setPage} />
+
+      <AgenceRetrait />
     </div>
   );
 }
